@@ -1,0 +1,75 @@
+/* MyServer · Aurora Glass skin for Jellyfin */
+:root{
+  --nxl-accent:#6ea8ff; --nxl-accent-2:#9d6bff;
+  --nxl-ink:#e9effc; --nxl-muted:rgba(200,215,240,.62);
+}
+html{background:#070a12 !important;}
+body{
+  background:
+    radial-gradient(1200px 700px at 10% -14%, rgba(58,118,224,.55), transparent 62%),
+    radial-gradient(950px 580px at 112% 2%, rgba(128,62,190,.46), transparent 58%),
+    radial-gradient(700px 500px at 50% 118%, rgba(22,130,140,.22), transparent 60%),
+    #070a12 !important;
+  background-attachment:fixed !important;
+  color:var(--nxl-ink) !important;
+  font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","HarmonyOS Sans SC","Noto Sans SC","Segoe UI",sans-serif !important;
+}
+#loginPage,.skinBody{background:transparent !important;}
+
+/* 输入框 */
+.emby-input,.emby-textarea,.emby-select{
+  background:rgba(255,255,255,.055) !important;
+  border:1px solid rgba(255,255,255,.14) !important;
+  border-radius:12px !important;
+  color:var(--nxl-ink) !important;
+  padding:12px 14px !important;
+  transition:border-color .3s,box-shadow .3s;
+}
+.emby-input:focus,.emby-textarea:focus,.emby-select:focus{
+  border-color:var(--nxl-accent) !important;
+  box-shadow:0 0 0 4px rgba(110,168,255,.16) !important;
+  outline:none !important;
+}
+.inputLabel,.selectLabel{color:var(--nxl-muted) !important;}
+
+/* 按钮 */
+.emby-button{border-radius:12px !important;transition:transform .25s,box-shadow .25s;}
+.button-submit{
+  background:linear-gradient(135deg,#4f8dff,#8f6bff) !important;
+  color:#fff !important;
+  border:0 !important;
+  box-shadow:0 16px 34px -16px rgba(79,141,255,.85) !important;
+}
+.button-submit:hover{transform:translateY(-1px);}
+.emby-button.raised.cancel{
+  background:rgba(255,255,255,.06) !important;
+  border:1px solid rgba(255,255,255,.09) !important;
+  color:var(--nxl-ink) !important;
+}
+/* 登录卡片刻意做成玻璃板 */
+.manualLoginForm{background:transparent !important;}
+#loginPage .padded-left.padded-right.margin-auto-y{
+  max-width:460px;margin:8vh auto 0 !important;
+  padding:34px 34px 22px !important;
+  border-radius:24px;
+  background:linear-gradient(180deg,rgba(255,255,255,.06),rgba(255,255,255,.02));
+  border:1px solid rgba(255,255,255,.09);
+  box-shadow:0 40px 80px -40px rgba(0,0,0,.95);
+  backdrop-filter:blur(16px);
+}
+/* 背景遮罩层（Jellyfin 自带 #101010 盖住了 body 渐变） */
+.backgroundContainer{background:transparent !important;}
+.backgroundContainer-withBackdrop{background:rgba(7,10,18,.55) !important;}
+/* 复选框 */
+.checkboxContainer .checkboxOutline{
+  border-color:rgba(255,255,255,.22) !important;
+  border-radius:6px !important;
+}
+.checkboxContainer input:checked ~ .checkboxOutline{
+  background:linear-gradient(135deg,#4f8dff,#8f6bff) !important;
+  border-color:transparent !important;
+}
+.checkboxIcon-checked{color:#fff !important;}
+a{color:#8fb6ff !important;}
+::-webkit-scrollbar-thumb{background:rgba(255,255,255,.16) !important;border-radius:99px !important;}
+::selection{background:rgba(110,168,255,.35) !important;}
