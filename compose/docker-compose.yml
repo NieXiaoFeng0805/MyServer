@@ -1,0 +1,139 @@
+services:
+  # ===== 媒体服务 =====
+  jellyfin:
+    image: jellyfin/jellyfin:latest
+    container_name: jellyfin
+    restart: unless-stopped
+    environment:
+      - TZ=Asia/Shanghai
+      - NVIDIA_VISIBLE_DEVICES=all
+      - NVIDIA_DRIVER_CAPABILITIES=compute,video,utility
+    volumes:
+      - /data/docker/jellyfin/config:/config
+      - /data/media:/media:ro
+      - jellyfin_cache:/cache
+    ports:
+      - "127.0.0.1:8096:8096"
+    deploy:
+      resources:
+        limits:
+          memory: 6g
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+
+  # ===== 下载服务 =====
+  qbittorrent:
+    image: lscr.io/linuxserver/qbittorrent:latest
+    container_name: qbittorrent
+    restart: unless-stopped
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Asia/Shanghai
+      - WEBUI_PORT=8080
+    volumes:
+      - /data/docker/qbittorrent/config:/config
+      - /data/downloads:/downloads
+    ports:
+      - "127.0.0.1:8080:8080"
+      - "6881:6881"
+      - "6881:6881/udp"
+    deploy:
+      resources:
+        limits:
+          memory: 2g
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fs http://localhost:8080/ > /dev/null || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+  # ===== 仪表盘 =====
+  homepage:
+    image: ghcr.io/gethomepage/homepage:latest
+    container_name: homepage
+    restart: unless-stopped
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Asia/Shanghai
+      - HOMEPAGE_ALLOWED_HOSTS=192.168.1.88:3000,192.168.1.88,10.144.144.1:3000,10.144.144.1,172.20.10.2:3000,172.20.10.2,127.0.0.1:3000,127.0.0.1,localhost:3000,localhost
+    volumes:
+      - /data/docker/homepage/config:/app/config
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /data:/host/data:ro
+      - /run/media/nxl-server/Melon:/host/melon:ro
+    deploy:
+      resources:
+        limits:
+          memory: 512m
+    ports:
+      - "127.0.0.1:3000:3000"
+    depends_on:
+      - jellyfin
+      - qbittorrent
+
+  # ===== 统一入口反代 (2026-10-04 新增) =====
+  npm:
+    image: jc21/nginx-proxy-manager:latest
+    container_name: npm
+    restart: unless-stopped
+    environment:
+      - TZ=Asia/Shanghai
+    volumes:
+      - /data/docker/npm/data:/data
+      - /data/docker/npm/letsencrypt:/etc/letsencrypt
+    ports:
+      - "80:80"
+      - "443:443"
+      - "81:81"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    deploy:
+      resources:
+        limits:
+          memory: 1g
+    depends_on:
+      - homepage
+
+  # ===== 文件管理 + 知识库 (2026-10-17 由 FileBrowser 换为 AList) =====
+  alist:
+    image: xhofe/alist:latest
+    container_name: alist
+    restart: unless-stopped
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - UMASK=022
+      - TZ=Asia/Shanghai
+    volumes:
+      - /data/alist:/opt/alist/data
+      - /data/photos:/opt/alist/mnt/photos
+      - /data/knowledge:/opt/alist/mnt/knowledge
+    deploy:
+      resources:
+        limits:
+          memory: 512m
+    # 不发布宿主机端口, 仅经 NPM 统一入口 /files 访问
+
+  # ===== Docker 可视化管理 =====
+  portainer:
+    image: portainer/portainer-ce:lts
+    container_name: portainer
+    restart: always
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /data/docker/portainer/data:/data
+    ports:
+      - "127.0.0.1:9443:9443"
+    deploy:
+      resources:
+        limits:
+          memory: 512m
+
+volumes:
+  jellyfin_cache:
