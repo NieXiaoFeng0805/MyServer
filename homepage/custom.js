@@ -44,7 +44,7 @@
     hero.innerHTML = `
       <div>
         <div class="nxl-hero-title">
-          <h1>NXL Server</h1>
+          <h1>MyServer</h1>
           <div class="nxl-pulse"></div>
         </div>
         <p class="nxl-hero-sub" id="nxl-hero-sub">家庭服务器 · 正在同步</p>
@@ -258,6 +258,7 @@
 
   // ---------- 启动 + 兜底重注入（React 每次重渲染会冲掉节点） ----------
   function apply() {
+    if (document.title !== "MyServer") document.title = "MyServer";
     injectHero();
     enhancePacks();
     ensureFab();
