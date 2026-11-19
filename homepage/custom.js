@@ -31,6 +31,26 @@
     "文件管理": "自动登录 · 照片上传到 /data/photos",
     "知识库": "SKILL / SOP 两个目录 · 拖拽上传",
   };
+  // 统一入口基址：跟随当前访问的主机名（NPM 在 80 端口）
+  const ENTRY = location.protocol + "//" + location.hostname;
+  const ON_ENTRY = ["", "80", "443"].indexOf(location.port) !== -1;
+  const ENTRY_PATHS = /^\/(jellyfin|qbittorrent|files|portainer|code)(\/|$)/;
+
+  // 把卡片链接改写成"当前主机 + 子路径"，换网段/换 IP 都不用改配置
+  function fixLinks() {
+    document.querySelectorAll("#services li.service a[href]").forEach(function (a) {
+      var raw = a.getAttribute("href") || "";
+      var u;
+      try { u = new URL(raw, location.href); } catch (e) { return; }
+      // 只改写"服务子路径"和 NPM 管理台(:81)，其余外链一律不动
+      var isService = ENTRY_PATHS.test(u.pathname) || u.port === "81";
+      if (!isService) return;
+      if (u.hostname !== location.hostname) u.hostname = location.hostname;
+      var next = u.toString();
+      if (a.getAttribute("href") !== next) a.setAttribute("href", next);
+    });
+  }
+
   const accentOf = (name) => ACCENTS[(name || "").trim().toLowerCase()] || "#6ea8ff";
 
   // ---------- Hero ----------
@@ -190,11 +210,11 @@
   }
 
   function autoLoginCode() {
-    const base = location.origin + "/code/";
+    const base = ENTRY + "/code/";
     const w = openTab(base);
     let tries = 0;
     (function attempt() {
-      fetch("/code/login", {
+      fetch(ENTRY + "/code/login", {
         method: "POST",
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
         body: "password=" + encodeURIComponent(CODE_PW),
@@ -209,9 +229,9 @@
   }
 
   function autoLoginQb() {
-    const base = location.origin + "/qbittorrent/";
+    const base = ENTRY + "/qbittorrent/";
     const w = openTab(base);
-    fetch("/qbittorrent/api/v2/auth/login", {
+    fetch(ENTRY + "/qbittorrent/api/v2/auth/login", {
       method: "POST",
       headers: { "Content-Type": "application/x-www-form-urlencoded" },
       body: "username=" + encodeURIComponent(QB_USER) + "&password=" + encodeURIComponent(QB_PW),
@@ -223,7 +243,7 @@
 
   function autoLoginFiles(targetHref) {
     const w = openTab(targetHref);
-    fetch("/files/api/auth/login", {
+    fetch(ENTRY + "/files/api/auth/login", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ username: "guest", password: FILES_PW }),
@@ -241,6 +261,7 @@
 
   document.addEventListener("click", function (e) {
     if (e.button !== 0 || e.ctrlKey || e.metaKey || e.shiftKey) return;
+    if (!ON_ENTRY) return;
     const a = e.target.closest("a[href]");
     if (!a) return;
     const href = a.getAttribute("href") || "";
@@ -262,6 +283,7 @@
     injectHero();
     enhancePacks();
     ensureFab();
+    fixLinks();
     tickClock();
   }
   apply();
