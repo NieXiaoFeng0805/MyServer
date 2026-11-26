@@ -223,6 +223,7 @@ body::after {
 }
 
 /* ---------- 服务区 ---------- */
+#layout-groups,
 #services {
   display: grid !important;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) !important;
@@ -237,6 +238,7 @@ body::after {
 .services-group:nth-child(n + 4) { grid-column: 1 / -1; }
 
 @media (max-width: 1000px) {
+  #layout-groups,
   #services { grid-template-columns: 1fr !important; }
   .services-group:nth-child(n) { grid-column: 1 !important; grid-row: auto !important; }
 }
@@ -721,6 +723,7 @@ li.service .service-card > .flex.flex-col.pb-1.mx-1 > div.nxl-empty {
 
 /* ---------- 细粒度适配 ---------- */
 @media (max-width: 900px) {
+  #layout-groups,
   #services { gap: 14px !important; }
   .services-group { flex: 1 1 100% !important; }
   .nxl-clock { display: none; }

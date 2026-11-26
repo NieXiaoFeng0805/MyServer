@@ -38,7 +38,7 @@
 
   // 把卡片链接改写成"当前主机 + 子路径"，换网段/换 IP 都不用改配置
   function fixLinks() {
-    document.querySelectorAll("#services li.service a[href]").forEach(function (a) {
+    document.querySelectorAll("li.service a[href]").forEach(function (a) {
       var raw = a.getAttribute("href") || "";
       var u;
       try { u = new URL(raw, location.href); } catch (e) { return; }
@@ -91,8 +91,8 @@
       });
     }
     if (sub) {
-      const n = document.querySelectorAll("#services .services-group").length;
-      const cards = document.querySelectorAll("#services li.service").length;
+      const n = document.querySelectorAll(".services-group").length;
+      const cards = document.querySelectorAll("li.service").length;
       sub.textContent = n
         ? `家庭服务器 · ${n} 个卡包 · ${cards} 项服务在线`
         : "家庭服务器";
@@ -102,7 +102,7 @@
 
   // ---------- 卡包增强 ----------
   function enhancePacks() {
-    document.querySelectorAll("#services .services-group").forEach((group) => {
+    document.querySelectorAll(".services-group").forEach((group) => {
       // 数量徽标
       const btn = group.querySelector(":scope > button");
       const list = group.querySelector(".services-list");
