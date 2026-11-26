@@ -277,6 +277,90 @@
     }
   });
 
+
+  // ---------- 隐藏保险箱：连点空白处 10 下 ----------
+  const VAULT = [
+    { svc: "统一入口网关", desc: "访问 /portainer /code 时浏览器弹框", user: "nxl", pass: "YBYeLOGYybU80PaA1" },
+    { svc: "Jellyfin", desc: "媒体库管理员", user: "root", pass: "DC-D8-C2-F5" },
+    { svc: "qBittorrent", desc: "下载器后台", user: "admin", pass: "t2ShnAZG2" },
+    { svc: "Portainer", desc: "Docker 管理台", user: "admin", pass: "9AwMvi5apQZTSkaA1" },
+    { svc: "NPM 管理台", desc: "反代管理台 :81", user: "admin@example.com", pass: "NxlAdmin2026aA1" },
+    { svc: "AList 文件/知识库", desc: "guest 与 admin 同密码", user: "guest / admin", pass: "YBYeLOGYybU80PaA1" },
+    { svc: "code-server", desc: "网页版 VS Code", user: "（仅密码）", pass: "000805" },
+  ];
+
+  let tapCount = 0;
+  let tapAt = 0;
+
+  function isBlankSpot(e) {
+    if (e.button !== 0) return false;
+    if (e.target.closest("a, button, input, textarea, select, [role='button'], .service-card, #nxl-vault")) return false;
+    return true;
+  }
+
+  function buildVault() {
+    if (document.getElementById("nxl-vault")) return;
+    const wrap = document.createElement("div");
+    wrap.id = "nxl-vault";
+    wrap.innerHTML = `
+      <div class="nxl-vault-card" role="dialog" aria-modal="true" aria-label="保险箱">
+        <div class="nxl-vault-head">
+          <h3>🔐 保险箱</h3>
+          <button class="nxl-vault-close" aria-label="关闭">✕</button>
+        </div>
+        <p class="nxl-vault-sub">连点空白处 10 下打开；密码只存在本机浏览器加载的脚本里。</p>
+        <div class="nxl-vault-list">
+          ${VAULT.map((v, i) => `
+            <div class="nxl-vault-row">
+              <div class="nxl-vault-info">
+                <b>${v.svc}</b>
+                <span>${v.desc}</span>
+                <em>${v.user}</em>
+              </div>
+              <div class="nxl-vault-pass">
+                <code data-i="${i}" data-shown="0">••••••••</code>
+                <button data-act="show" data-i="${i}">显示</button>
+                <button data-act="copy" data-i="${i}">复制</button>
+              </div>
+            </div>`).join("")}
+        </div>
+      </div>`;
+    document.body.appendChild(wrap);
+    wrap.addEventListener("click", (e) => { if (e.target === wrap) closeVault(); });
+    wrap.querySelector(".nxl-vault-close").addEventListener("click", closeVault);
+    wrap.querySelectorAll("button[data-act]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const i = +btn.dataset.i, row = VAULT[i], code = wrap.querySelector(`code[data-i="${i}"]`);
+        if (btn.dataset.act === "show") {
+          const shown = code.dataset.shown === "1";
+          code.textContent = shown ? "••••••••" : row.pass;
+          code.dataset.shown = shown ? "0" : "1";
+          btn.textContent = shown ? "显示" : "隐藏";
+        } else {
+          const text = row.user + " / " + row.pass;
+          (navigator.clipboard ? navigator.clipboard.writeText(text) : Promise.reject()).then(
+            () => { btn.textContent = "已复制"; setTimeout(() => (btn.textContent = "复制"), 1200); },
+            () => { btn.textContent = "手抄吧"; }
+          );
+        }
+      });
+    });
+  }
+
+  const openVault = () => { buildVault(); document.getElementById("nxl-vault").classList.add("open"); };
+  const closeVault = () => document.getElementById("nxl-vault")?.classList.remove("open");
+
+  document.addEventListener("click", function (e) {
+    if (!isBlankSpot(e)) return;
+    const now = Date.now();
+    if (now - tapAt > 800) tapCount = 0;
+    tapAt = now;
+    tapCount += 1;
+    if (tapCount >= 10) { tapCount = 0; openVault(); }
+  });
+
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeVault(); });
+
   // ---------- 启动 + 兜底重注入（React 每次重渲染会冲掉节点） ----------
   function apply() {
     if (document.title !== "MyServer") document.title = "MyServer";

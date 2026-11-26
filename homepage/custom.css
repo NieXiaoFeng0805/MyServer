@@ -732,3 +732,63 @@ li.service .service-card > .flex.flex-col.pb-1.mx-1 > div.nxl-empty {
 @media (prefers-reduced-motion: reduce) {
   * { animation: none !important; transition-duration: 0.01ms !important; }
 }
+
+/* ---------- 隐藏保险箱（连点空白处 10 下） ---------- */
+#nxl-vault {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  display: none;
+  place-items: center;
+  padding: 24px;
+  background: rgba(4, 7, 14, 0.68);
+  backdrop-filter: blur(10px);
+}
+#nxl-vault.open { display: grid; animation: fadeIn 0.22s ease both; }
+.nxl-vault-card {
+  width: min(680px, 100%);
+  max-height: 82vh;
+  overflow: auto;
+  border-radius: 22px;
+  border: 1px solid var(--stroke-2);
+  background: linear-gradient(180deg, rgba(22, 30, 48, 0.97), rgba(12, 17, 28, 0.98));
+  box-shadow: 0 60px 120px -40px rgba(0, 0, 0, 1);
+  padding: 20px 22px 18px;
+  animation: popIn 0.28s var(--ease) both;
+}
+.nxl-vault-head { display: flex; align-items: center; justify-content: space-between; }
+.nxl-vault-head h3 { margin: 0; font-size: 17px; color: var(--ink-0); }
+.nxl-vault-close {
+  width: 30px; height: 30px; border-radius: 9px;
+  border: 1px solid var(--stroke); background: rgba(255,255,255,.05);
+  color: var(--ink-2); cursor: pointer; font-size: 13px;
+}
+.nxl-vault-close:hover { color: var(--ink-0); border-color: var(--stroke-2); }
+.nxl-vault-sub { margin: 6px 0 14px; font-size: 11.5px; color: var(--ink-3); }
+.nxl-vault-list { display: flex; flex-direction: column; gap: 8px; }
+.nxl-vault-row {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  padding: 10px 12px; border-radius: 12px;
+  background: rgba(255, 255, 255, 0.045);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  flex-wrap: wrap;
+}
+.nxl-vault-info { display: flex; flex-direction: column; gap: 2px; min-width: 160px; }
+.nxl-vault-info b { font-size: 13px; color: var(--ink-0); }
+.nxl-vault-info span { font-size: 10.5px; color: var(--ink-3); }
+.nxl-vault-info em { font-style: normal; font-size: 11px; color: #8fb6ff; }
+.nxl-vault-pass { display: flex; align-items: center; gap: 6px; }
+.nxl-vault-pass code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 12px; color: var(--ink-1);
+  background: rgba(0, 0, 0, 0.28);
+  border: 1px solid var(--stroke);
+  border-radius: 8px; padding: 5px 9px; min-width: 126px; text-align: center;
+}
+.nxl-vault-pass button {
+  border-radius: 8px; border: 1px solid var(--stroke);
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--ink-1); font-size: 11px; padding: 5px 9px; cursor: pointer;
+  transition: background .2s, border-color .2s;
+}
+.nxl-vault-pass button:hover { background: rgba(110, 168, 255, 0.18); border-color: rgba(110, 168, 255, 0.45); }
