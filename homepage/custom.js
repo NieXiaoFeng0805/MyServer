@@ -194,6 +194,87 @@
     if (e.key === "Escape") closeModal();
   });
 
+
+  // ---------- 网关鉴权提示（/portainer /code） ----------
+  const PROTECTED = /^\/(portainer|code)(\/|$)/;
+  const GATE = [
+    { name: "Portainer", path: "/portainer/", user: "nxl", pass: "YBYeLOGYybU80PaA1" },
+    { name: "code-server", path: "/code/", user: "nxl", pass: "YBYeLOGYybU80PaA1" },
+  ];
+
+  function gateModal() {
+    if (document.getElementById("nxl-gate")) return document.getElementById("nxl-gate");
+    const wrap = document.createElement("div");
+    wrap.id = "nxl-gate";
+    wrap.innerHTML = `
+      <div class="nxl-vault-card" role="dialog" aria-modal="true" aria-label="需要网关密码">
+        <div class="nxl-vault-head">
+          <h3>🔑 需要网关密码</h3>
+          <button class="nxl-vault-close" aria-label="关闭">✕</button>
+        </div>
+        <p class="nxl-vault-sub" id="nxl-gate-target"></p>
+        <div class="nxl-gate-body">
+          <div class="nxl-gate-row"><span>账号</span><code id="nxl-gate-user"></code></div>
+          <div class="nxl-gate-row"><span>密码</span><code id="nxl-gate-pass">••••••••</code></div>
+          <div class="nxl-gate-actions">
+            <button id="nxl-gate-show">显示密码</button>
+            <button id="nxl-gate-copy">复制账号密码</button>
+          </div>
+          <p class="nxl-gate-tip">浏览器会弹一个原生密码框，填这套就行；填一次浏览器会记住，以后不再问。</p>
+          <button id="nxl-gate-go" class="nxl-gate-go">继续打开</button>
+        </div>
+      </div>`;
+    document.body.appendChild(wrap);
+    wrap.addEventListener("click", (e) => { if (e.target === wrap) wrap.classList.remove("open"); });
+    wrap.querySelector(".nxl-vault-close").addEventListener("click", () => wrap.classList.remove("open"));
+    return wrap;
+  }
+
+  function openGate(item, href) {
+    const wrap = gateModal();
+    wrap.dataset.href = href;
+    wrap.querySelector("#nxl-gate-target").textContent = item.name + " 挂在统一入口后面，需要先过网关";
+    wrap.querySelector("#nxl-gate-user").textContent = item.user;
+    const pass = wrap.querySelector("#nxl-gate-pass");
+    pass.textContent = "••••••••";
+    pass.dataset.shown = "0";
+    wrap.querySelector("#nxl-gate-show").textContent = "显示密码";
+    wrap.classList.add("open");
+  }
+
+  document.addEventListener("click", function (e) {
+    const wrap = document.getElementById("nxl-gate");
+    if (!wrap || !wrap.classList.contains("open")) return;
+    if (e.target.id === "nxl-gate-show") {
+      const pass = wrap.querySelector("#nxl-gate-pass");
+      const shown = pass.dataset.shown === "1";
+      pass.textContent = shown ? "••••••••" : "YBYeLOGYybU80PaA1";
+      pass.dataset.shown = shown ? "0" : "1";
+      e.target.textContent = shown ? "显示密码" : "隐藏密码";
+    } else if (e.target.id === "nxl-gate-copy") {
+      navigator.clipboard?.writeText("nxl / YBYeLOGYybU80PaA1").then(
+        () => { e.target.textContent = "已复制"; setTimeout(() => (e.target.textContent = "复制账号密码"), 1200); },
+        () => { e.target.textContent = "手抄吧"; }
+      );
+    } else if (e.target.id === "nxl-gate-go") {
+      const href = wrap.dataset.href;
+      wrap.classList.remove("open");
+      window.open(href, "_blank");
+    }
+  });
+
+  async function gateOrOpen(href, item) {
+    let status = 0;
+    try {
+      const r = await fetch(href, { method: "HEAD", credentials: "include", cache: "no-store" });
+      status = r.status;
+    } catch (err) {
+      status = -1;
+    }
+    if (status === 401) { openGate(item, href); return; }
+    window.open(href, "_blank");
+  }
+
   // ---------- 自动登录 ----------
   const CODE_PW = "000805";
   const QB_USER = "admin";
@@ -265,6 +346,13 @@
     const a = e.target.closest("a[href]");
     if (!a) return;
     const href = a.getAttribute("href") || "";
+    const u = new URL(a.getAttribute("href") || "", location.href);
+    if (PROTECTED.test(u.pathname)) {
+      e.preventDefault();
+      const item = GATE.find((g) => u.pathname.startsWith(g.path)) || GATE[0];
+      gateOrOpen(u.toString(), item);
+      return;
+    }
     if (href.includes("/files")) {
       e.preventDefault();
       autoLoginFiles(a.href);
